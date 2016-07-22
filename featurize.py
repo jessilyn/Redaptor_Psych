@@ -119,6 +119,6 @@ if __name__ == '__main__':
     parser.add_argument("-l","--labels", type=str, help="input labels" )
     args = parser.parse_args() 
     
-    args.inputdir = "/Users/fries/Desktop/badge_project/badges_parsed/cleaned/"
+    #args.inputdir = "/Users/fries/Desktop/badge_project/badges_parsed/cleaned/"
     
     main(args)
