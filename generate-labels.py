@@ -30,15 +30,18 @@ def generate_label_dictionary(master_dataset_csv_file, field_substrings):
     bdict = {'yes': 1, 'no': 0}
     bdata = [[tryconvert(field, bdict) for field in row] for row in hdata]
     datadict = dict()
-    for row in bdata:
+    for row in bdata[1:]:
         datadict[row[0]] = row[1:]
     return datadict
+
+def filename_to_article_id(filename):
+    filename = filename[0:filename.rfind('.')]
+    aid = filename[filename.rfind('.')+1:]
+    aid = aid.lower().replace('_',' ')
+    return aid
 
 # Main program
 field_substrings = ['badge for open data', 'data are available']
 master_dataset_csv_file = '/Users/Ina/Dropbox/Projects/Redaptor_Psychology/Gold Standard Psychology/Master Dataset Filtered.csv'
 datadict = generate_label_dictionary(master_dataset_csv_file, field_substrings)
-print datadict
-
-
-'Journal_of_Personality_and_Social_Psychology.2013.October.10-10-2013_JPSP.txt'
+print datadict[filename_to_article_id('Journal_of_Personality_and_Social_Psychology.2013.October.10-10-2013_JPSP.txt')]
