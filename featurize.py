@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 '''
 
 @author: fries
@@ -22,12 +24,14 @@ from sklearn.linear_model import SGDClassifier,LogisticRegression
 from sklearn.ensemble import ExtraTreesClassifier,RandomForestClassifier
 from sklearn import metrics
 import numpy as np
+import pdb
+import os
 
 def load_corpus(inputdir):
     '''Load document collection'''
     docs = []
     filelist = glob.glob("{}*.txt".format(inputdir))
-    for fname in filelist[0:1000]:
+    for fname in filelist[0:3000]:
         d = []
         with codecs.open(fname,"rU",'utf-8') as fp:
             d += [line.strip().split() for line in fp.readlines()]
@@ -35,24 +39,43 @@ def load_corpus(inputdir):
         d = reduce(lambda x,y:x+y,d)
         docs += [" ".join(d)]
           
-    return docs
-    
+    return (docs, filelist)
 
+def load_doc_labels(doclabelfile, filelist):
+
+    labels = []
+    doc_labels_dict = {}
+    with open(doclabelfile) as FH:
+        doc_labels = FH.readlines()
+    # Create document-label dictionary
+    for entry in doc_labels:
+        elements = entry.split(',')
+        doc = elements[0]
+        label = int(elements[1].rstrip())
+        doc_labels_dict[doc] = label
+    # Create a list of labels in the same order as the docs
+    for path in filelist:
+        label = doc_labels_dict[os.path.basename(path)]
+        labels.append(label)
+    return labels
         
 def main(args):
     
     seed = 123456
     
     top_k_ftrs = 15
-    docs = load_corpus(args.inputdir)
+    corpus = load_corpus(args.inputdir)
+    docs = corpus[0]
+    filelist = corpus[1]
+    #pdb.set_trace()
     
     # load labels here
-    labels = [int(random.getrandbits(1)) for _ in range(len(docs))]
+    labels = load_doc_labels(args.labels, filelist)
+    #labels = [int(random.getrandbits(1)) for i in range(len(docs))]
     
     X_train, X_test, y_train, y_test = train_test_split(docs, labels, test_size=0.33,
                                                         random_state=seed)
    
-        
     print("\n----------------------------")
     print("Logistic Regression")
     print("----------------------------")
@@ -61,6 +84,7 @@ def main(args):
     
     vectorizer = CountVectorizer(ngram_range=(1, 2), min_df=2, max_df=0.50, lowercase=True)
    
+    #pdb.set_trace()
     classifier = Pipeline([
                            ('vect', vectorizer),
                            ('clf', lr_clf)])
@@ -115,10 +139,11 @@ def main(args):
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i","--documents", type=str, help="input corpus")
-    parser.add_argument("-l","--labels", type=str, help="input labels" )
+    parser.add_argument("-i","--documents", type=str, help="input corpus", dest="documents")
+    parser.add_argument("-l","--labels", type=str, help="input labels", dest="labels" )
     args = parser.parse_args() 
     
     #args.inputdir = "/Users/fries/Desktop/badge_project/badges_parsed/cleaned/"
+    args.inputdir = "/srv/gsfs0/scratch/Redaptor_Psych/badges_parsed/cleaned/"
     
     main(args)
